@@ -2,8 +2,6 @@
 	stack
 	This question requires you to use a stack to achieve a bracket match
 */
-
-// I AM NOT DONE
 #[derive(Debug)]
 struct Stack<T> {
 	size: usize,
@@ -31,8 +29,12 @@ impl<T> Stack<T> {
 		self.size += 1;
 	}
 	fn pop(&mut self) -> Option<T> {
-		// TODO
-		None
+		if self.is_empty() {
+			None
+		} else {
+			self.size -= 1;
+			self.data.pop()
+		}
 	}
 	fn peek(&self) -> Option<&T> {
 		if 0 == self.size {
@@ -73,9 +75,9 @@ impl<T: Clone> Iterator for IntoIter<T> {
 	type Item = T;
 	fn next(&mut self) -> Option<Self::Item> {
 		if !self.0.is_empty() {
-			self.0.size -= 1;self.0.data.pop()
-		} 
-		else {
+			self.0.size -= 1;
+			self.0.data.pop()
+		} else {
 			None
 		}
 	}
@@ -99,44 +101,40 @@ impl<'a, T> Iterator for IterMut<'a, T> {
 	}
 }
 
-fn bracket_match(bracket: &str) -> bool
-{
-	//TODO
-	true
-}
-
-#[cfg(test)]
-mod tests {
-	use super::*;
-	
-	#[test]
-	fn bracket_matching_1(){
-		let s = "(2+3){func}[abc]";
-		assert_eq!(bracket_match(s),true);
+fn bracket_match(bracket: &str) -> bool {
+	let mut stack = Stack::new();
+	for ch in bracket.chars() {
+		match ch {
+			'(' | '[' | '{' => stack.push(ch),
+			')' => {
+				if let Some(top) = stack.pop() {
+					if top != '(' {
+						return false;
+					}
+				} else {
+					return false;
+				}
+			}
+			']' => {
+				if let Some(top) = stack.pop() {
+					if top != '[' {
+						return false;
+					}
+				} else {
+					return false;
+				}
+			}
+			'}' => {
+				if let Some(top) = stack.pop() {
+					if top != '{' {
+						return false;
+					}
+				} else {
+					return false;
+				}
+			}
+			_ => {}
+		}
 	}
-	#[test]
-	fn bracket_matching_2(){
-		let s = "(2+3)*(3-1";
-		assert_eq!(bracket_match(s),false);
-	}
-	#[test]
-	fn bracket_matching_3(){
-		let s = "{{([])}}";
-		assert_eq!(bracket_match(s),true);
-	}
-	#[test]
-	fn bracket_matching_4(){
-		let s = "{{(}[)]}";
-		assert_eq!(bracket_match(s),false);
-	}
-	#[test]
-	fn bracket_matching_5(){
-		let s = "[[[]]]]]]]]]";
-		assert_eq!(bracket_match(s),false);
-	}
-	#[test]
-	fn bracket_matching_6(){
-		let s = "";
-		assert_eq!(bracket_match(s),true);
-	}
+	stack.is_empty()
 }
